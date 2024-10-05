@@ -1,9 +1,18 @@
 import asyncio
 from websockets.asyncio.server import serve
 
+chat_history = []
+
 async def handler(websocket):
+    global chat_history
     async for message in websocket:
-        print(message)
+        if message == '/history':
+            for msg in chat_history:
+                await websocket.send(msg)
+        elif message == '/clear':
+            chat_history = []
+        else:
+            chat_history.append(message)
 
 async def main():
     async with serve(handler, 'localhost', 80):
