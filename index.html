@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1, shrink-to-fit=no" name="viewport">
+    <title>CExchange</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+<div class="card">
+    <div class="chat-header">Chat</div>
+    <div class="chat-window">
+        <ul class="message-list"></ul>
+    </div>
+    <div class="chat-input">
+        <input class="message-input" id="message" placeholder="Type your message here" type="text"> <br/>
+        <button class="send-button" onclick="sendMessage()">Send</button>
+    </div>
+</div>
+<script>
+    let socket;
+
+    function init() {
+        try {
+            socket = new WebSocket("ws://localhost:80");
+            socket.onopen = function () {
+                console.log("websocket opened");
+               // socket.send('history');
+            };
+            socket.onclose = function () {
+                console.log("websocket closed");
+            };
+            socket.onmessage = function (event) {
+                console.log("websocket message: " + event.data);
+                let newMessage = document.createElement("li");
+                newMessage.classList.add("incoming-message");
+                newMessage.textContent = event.data;
+                document.querySelector(".message-list").appendChild(newMessage);
+                let message_list = document.getElementById('message-list');
+                message_list.scrollTop = message_list.scrollHeight;
+            };
+            socket.onerror = function (event) {
+                console.log("websocket error: " + event);
+            };
+        } catch (error) {
+            console.log("WebSocket Error: " + error);
+        }
+    }
+
+    function sendMessage() {
+        let message = document.getElementById("message");
+        if (message.value === '/clear'){
+            document.querySelector('.message-list').innerHTML = '';
+            socket.send(message.value);
+            message.value = '';
+        }
+        else{
+        socket.send(message.value);
+        let newMessage = document.createElement("li");
+        newMessage.classList.add("outgoing-message");
+        newMessage.textContent = message.value;
+        document.querySelector(".message-list").appendChild(newMessage);
+        message.value = '';
+    }
+    }
+
+    init();
+</script>
+</body>
+</html>
