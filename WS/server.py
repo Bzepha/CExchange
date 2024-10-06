@@ -25,7 +25,7 @@ async def handler(websocket):
 async def main():
     print('Attempting to start the server...')
     async with websockets.serve(handler, '0.0.0.0', 8080):
-        print('Server started on was://0.0.0.0:8080')
+        print('Server started on ws://0.0.0.0:8080')
         await asyncio.Future()
 
 if __name__ == '__main__':
