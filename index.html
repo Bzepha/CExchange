@@ -5,11 +5,11 @@
     <meta content="width=device-width, initial-scale=1, shrink-to-fit=no" name="viewport">
     <title>CExchange</title>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
-    <link rel="stylesheet" href="./style.css">
+    <link rel="stylesheet" href="./style.css" type="text/css">
 </head>
 <body>
 <div class="card">
-    <div class="chat-header">Chat</div>
+    <div class="chat-header">Chat</div>>
     <div class="chat-window">
         <ul class="message-list"></ul>
     </div>
@@ -23,10 +23,10 @@
 
     function init() {
         try {
-            socket = new WebSocket("ws://localhost:80");
+            socket = new WebSocket("ws://localhost:8080");
             socket.onopen = function () {
                 console.log("websocket opened");
-               // socket.send('history');
+                //socket.send('history');
             };
             socket.onclose = function () {
                 console.log("websocket closed");
@@ -37,8 +37,8 @@
                 newMessage.classList.add("incoming-message");
                 newMessage.textContent = event.data;
                 document.querySelector(".message-list").appendChild(newMessage);
-                let message_list = document.getElementById('message-list');
-                message_list.scrollTop = message_list.scrollHeight;
+                let message_List = document.querySelector(".message-list");
+                message_List.scrollTop = message_List.scrollHeight;
             };
             socket.onerror = function (event) {
                 console.log("websocket error: " + event);
@@ -49,20 +49,26 @@
     }
 
     function sendMessage() {
-        let message = document.getElementById("message");
-        if (message.value === '/clear'){
+        let message = document.getElementById("message").value;
+
+        if (message === '/clear') {
             document.querySelector('.message-list').innerHTML = '';
-            socket.send(message.value);
-            message.value = '';
+            socket.send(message);
+            document.getElementById("message").value = '';
+        } else {
+            socket.send(message);
+            console.log("Message sent: ", message);
+
+            let newMessage = document.createElement("li");
+            newMessage.classList.add("outgoing-message");
+            newMessage.textContent = message;
+            document.querySelector(".message-list").appendChild(newMessage);
+
+            document.getElementById("message").value = '';
+
+            let messageList = document.querySelector(".message-list");
+            messageList.scrollTop = messageList.scrollHeight;
         }
-        else{
-        socket.send(message.value);
-        let newMessage = document.createElement("li");
-        newMessage.classList.add("outgoing-message");
-        newMessage.textContent = message.value;
-        document.querySelector(".message-list").appendChild(newMessage);
-        message.value = '';
-    }
     }
 
     init();
