@@ -1,5 +1,5 @@
 import asyncio
-from websockets
+import websockets
 
 connected_clients = set()
 chat_history = []
