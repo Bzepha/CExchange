@@ -289,6 +289,12 @@
         const usernamePrompt = document.getElementById('username-prompt');
         usernamePrompt.classList.add('visible');
     });
+
+    document.getElementById("message").addEventListener("keyup", ({key}) => {
+        if (key === "Enter") {
+            sendMessage();
+        }
+    });
 </script>
 <img id="fox-icon" src="https://raw.githubusercontent.com/Bzepha/CExchange/refs/heads/webpage/red_fox.png" alt="Fox" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 400px; height: auto; opacity: 0; transition: opacity 1s;">
 </body>
