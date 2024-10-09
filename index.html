@@ -232,8 +232,8 @@
                         newMessage.style.transition = "opacity 0.5s ease";
                     }, 100);
 
-                    let messageList = document.querySelector(".message-list");
-                    messageList.scrollTop = messageList.scrollHeight;
+                    let chatContainer = document.querySelector(".chat-window");
+                    chatContainer.scrollTop = chatContainer.scrollHeight;
                 }
             };
 
@@ -279,8 +279,8 @@
 
             document.getElementById("message").value = '';
 
-            let messageList = document.querySelector(".message-list");
-            messageList.scrollTop = messageList.scrollHeight;
+            let chatContainer = document.querySelector(".chat-window");
+            chatContainer.scrollTop = chatContainer.scrollHeight;
         }
     }
     init();
