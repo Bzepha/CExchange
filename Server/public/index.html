@@ -6,7 +6,7 @@
     <title>CExchange</title>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.min.js"></script>
-    <link rel="stylesheet" href="style.css">
+    <link type="text/css" rel="stylesheet" href="/style.css">
     <style>
         #username-prompt {
             display: flex;
@@ -67,7 +67,7 @@
 </div>
 
 <script>
-    let socket;
+    const socket = io();
 
     function enterChat() {
         const username = getCookie("username");
@@ -202,7 +202,6 @@
 
 
     function init() {
-        socket = io("http://localhost:8080");
 
         socket.on('message', (message) => {
             console.log("Received message: " + message);
