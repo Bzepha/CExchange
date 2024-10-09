@@ -5,6 +5,7 @@
     <meta content="width=device-width, initial-scale=1, shrink-to-fit=no" name="viewport">
     <title>CExchange</title>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.min.js"></script>
     <link rel="stylesheet" href="style.css">
     <style>
         #username-prompt {
@@ -201,49 +202,24 @@
 
 
     function init() {
-        try {
-            socket = new WebSocket("ws://127.0.0.1:8080");
-            socket.onopen = function () {
-                console.log("websocket opened");
+        socket = io("http://localhost:8080");
 
-            };
-            socket.onclose = function () {
-                console.log("websocket closed");
-            };
-            socket.onmessage = function (event) {
-                const message = event.data;
+        socket.on('message', (message) => {
+            console.log("Received message: " + message);
+            appendMessageToList(message);
+        });
 
+        socket.on('chat history', (history) => {
+            history.forEach((message) => appendMessageToList(message));
+        });
 
-                if (message === '/history') {
-                    console.log("History command received");
+        socket.on('clear chat', () => {
+           document.querySelector(".message-list").innerHTML = '';
+        });
 
-                } else {
+        document.querySelector(".send-button").addEventListener("click", sendMessage);
 
-                    console.log("websocket message: " + message);
-                    let newMessage = document.createElement("li");
-                    newMessage.classList.add("incoming-message");
-                    newMessage.textContent = message;
-                    newMessage.style.opacity = 0;
-                    document.querySelector(".message-list").appendChild(newMessage);
-
-
-                    setTimeout(() => {
-                        newMessage.style.opacity = 1;
-                        newMessage.style.transition = "opacity 0.5s ease";
-                    }, 100);
-
-                    let messageList = document.querySelector(".message-list");
-                    messageList.scrollTop = messageList.scrollHeight;
-                }
-            };
-
-
-            socket.onerror = function (event) {
-                console.log("websocket error: " + event);
-            };
-        } catch (error) {
-            console.log("WebSocket Error: " + error);
-        }
+        socket.emit('history');
     }
 
     function sendMessage() {
@@ -251,37 +227,20 @@
         const username = getCookie("username");
 
         if (message === '/clear') {
-            document.querySelector('.message-list').innerHTML = '';
-            socket.send(message);
-            document.getElementById("message").value = '';
-        } else if (message === '/history') {
-            socket.send(message);
-            document.getElementById("message").value = '';
+            socket.emit('clear');
         } else {
             const messageWithUsername = `${username}: ${message}`;
-
-
-            socket.send(messageWithUsername);
-            console.log("Message sent: ", messageWithUsername);
-
-
-            let newMessage = document.createElement("li");
-            newMessage.classList.add("outgoing-message");
-            newMessage.textContent = messageWithUsername;
-            newMessage.style.opacity = 0;
-            document.querySelector(".message-list").appendChild(newMessage);
-
-
-            setTimeout(() => {
-                newMessage.style.opacity = 1;
-                newMessage.style.transition = "opacity 0.5s ease";
-            }, 100);
-
-            document.getElementById("message").value = '';
-
-            let messageList = document.querySelector(".message-list");
-            messageList.scrollTop = messageList.scrollHeight;
+            socket.emit('message', messageWithUsername);
         }
+
+        document.getElementById('message').value = '';
+    }
+
+    function appendMessageToList(message) {
+        let newMessage = document.createElement("li");
+        newMessage.classList.add("incoming-message");
+        newMessage.textContent = message;
+        document.querySelector(".message-list").appendChild(newMessage);
     }
     init();
 
