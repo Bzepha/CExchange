@@ -216,6 +216,9 @@
         document.querySelector(".send-button").addEventListener("click", sendMessage);
 
         socket.emit('history');
+
+        let chatContainer = document.querySelector(".chat-window");
+        chatContainer.scrollTop = chatContainer.scrollHeight;
     }
 
     function sendMessage() {
@@ -234,6 +237,9 @@
         }
 
         document.getElementById('message').value = '';
+
+        let chatContainer = document.querySelector(".chat-window")
+        chatContainer.scrollTop = chatContainer.scrollHeight;
     }
 
     function appendMessageToList(message) {
