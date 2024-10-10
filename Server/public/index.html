@@ -5,8 +5,8 @@
     <meta content="width=device-width, initial-scale=1, shrink-to-fit=no" name="viewport">
     <title>CExchange</title>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.min.js"></script>
-    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <link type="text/css" rel="stylesheet" href="/style.css">
     <style>
         #username-prompt {
             display: flex;
@@ -67,7 +67,7 @@
 </div>
 
 <script>
-    let socket;
+    const socket = io();
 
     function enterChat() {
         const username = getCookie("username");
@@ -200,10 +200,16 @@
         document.getElementById("enter-chat-button").style.display = "none";
     }
 
+    function appendMessageToList(message) {
+        const item = document.createElement('li');
+        item.classList.add("incoming-message");
+        item.textContent = message;
+        item.style.opacity = 1;
+        console.log("appendMessageToList called");
+        document.querySelector(".message-list").appendChild(item);
+    }
 
     function init() {
-        socket = io("http://localhost:8080");
-
         socket.on('message', (message) => {
             console.log("Received message: " + message);
             appendMessageToList(message);
@@ -236,12 +242,6 @@
         document.getElementById('message').value = '';
     }
 
-    function appendMessageToList(message) {
-        let newMessage = document.createElement("li");
-        newMessage.classList.add("incoming-message");
-        newMessage.textContent = message;
-        document.querySelector(".message-list").appendChild(newMessage);
-    }
     init();
 
     document.addEventListener("DOMContentLoaded", function () {
@@ -254,6 +254,7 @@
             sendMessage();
         }
     });
+
 </script>
 <img id="fox-icon" src="https://raw.githubusercontent.com/Bzepha/CExchange/refs/heads/webpage/red_fox.png" alt="Fox" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 400px; height: auto; opacity: 0; transition: opacity 1s;">
 </body>
