@@ -59,7 +59,9 @@
             <ul class="message-list"></ul>
         </div>
         <div class="chat-input">
-            <label for="message"></label><input class="message-input" id="message" placeholder="Type your message here" type="text"> <br/>
+            <label for="message"></label>
+            <textarea class="message-input" id="message" placeholder="Type your message here" wrap="soft" maxlength="2000" autofocus></textarea>
+            <br/>
             <button class="send-button" onclick="sendMessage()">Send</button>
         </div>
         <button id="change-username" onclick="showUsernamePrompt()">Change Username</button>
@@ -78,11 +80,11 @@
             let welcomeMessage = document.createElement("li");
             welcomeMessage.classList.add("incoming-message");
             welcomeMessage.textContent = `Welcome back, ${username}!`;
-            welcomeMessage.style.opacity = 0;
+            welcomeMessage.style.opacity = '0';
             document.querySelector(".message-list").appendChild(welcomeMessage);
 
             setTimeout(() => {
-                welcomeMessage.style.opacity = 1;
+                welcomeMessage.style.opacity = '1';
                 welcomeMessage.style.transition = "opacity 0.5s ease";
 
                 setTimeout(() => {
@@ -90,7 +92,7 @@
                     chatContainer.style.display = "block";
                     chatContainer.classList.add('slide-up');
 
-                    socket.send(`Welcome, ${username}!`);
+                    //socket.emit(`Welcome, ${username}!`); //testing
                 }, 500);
             }, 100);
         }
@@ -200,14 +202,6 @@
         document.getElementById("enter-chat-button").style.display = "none";
     }
 
-    function appendMessageToList(message) {
-        const item = document.createElement('li');
-        item.classList.add("incoming-message");
-        item.textContent = message;
-        item.style.opacity = 1;
-        console.log("appendMessageToList called");
-        document.querySelector(".message-list").appendChild(item);
-    }
 
     function init() {
         socket.on('message', (message) => {
@@ -219,10 +213,6 @@
             history.forEach((message) => appendMessageToList(message));
         });
 
-        socket.on('clear chat', () => {
-           document.querySelector(".message-list").innerHTML = '';
-        });
-
         document.querySelector(".send-button").addEventListener("click", sendMessage);
 
         socket.emit('history');
@@ -232,14 +222,27 @@
         const message = document.getElementById("message").value;
         const username = getCookie("username");
 
-        if (message === '/clear') {
+        if (message === `/clear`) {
             socket.emit('clear');
+            console.log("clear called")
+        } else if (message === '/history') {
+            socket.emit('history');
+            console.log("history called")
         } else {
             const messageWithUsername = `${username}: ${message}`;
             socket.emit('message', messageWithUsername);
         }
 
         document.getElementById('message').value = '';
+    }
+
+    function appendMessageToList(message) {
+        const item = document.createElement('li');
+        item.classList.add("outgoing-message");
+        item.textContent = message;
+        item.style.opacity = '1';
+        console.log("appendMessageToList called");
+        document.querySelector(".message-list").appendChild(item);
     }
 
     init();

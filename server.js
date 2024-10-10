@@ -8,9 +8,9 @@ const server = createServer(app);
 const io = new Server(server);
 
 app.get('/', (req, res) => {
-   res.sendFile(__dirname + '/Server/public/index.html');
-   app.use(express.static(__dirname + '/Server/public', {
-       index: false,
+    res.sendFile(join(__dirname + '/Server/public/index.html'));
+    app.use(express.static(__dirname + '/Server/public/', {
+        index: false,
         immutable: true,
         cacheControl: true,
         maxAge: "30d"
@@ -24,17 +24,19 @@ io.on('connection', (socket) => {
 
     // Send history to new user
     socket.on('history', () => {
+        console.log("history called")
         socket.emit('chat history', chatHistory);
     });
 
     // Listen for new messages
     socket.on('message', (msg) => {
-        chatHistory.push(msg);
         io.emit('message', msg)
-        console.log('message:' + msg)
+        chatHistory.push(msg);
+        console.log('message: ' + msg)
     });
 
     socket.on('clear', () => {
+        console.log("clear called")
         chatHistory = [];
         io.emit('clear chat');
     });
