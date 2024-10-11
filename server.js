@@ -24,8 +24,14 @@ io.on('connection', (socket) => {
 
     // Send history to new user
     socket.on('history', () => {
-        console.log("history called")
+        console.log("history called (server)")
         socket.emit('chat history', chatHistory);
+    });
+
+    socket.on('clear', () => {
+        console.log("clear called (server)")
+        chatHistory = [];
+        io.emit('clear chat');
     });
 
     // Listen for new messages
@@ -33,12 +39,6 @@ io.on('connection', (socket) => {
         io.emit('message', msg)
         chatHistory.push(msg);
         console.log('message: ' + msg)
-    });
-
-    socket.on('clear', () => {
-        console.log("clear called")
-        chatHistory = [];
-        io.emit('clear chat');
     });
 
     socket.on('disconnect', () => {
