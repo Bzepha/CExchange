@@ -5,7 +5,8 @@
     <meta content="width=device-width, initial-scale=1, shrink-to-fit=no" name="viewport">
     <title>CExchange</title>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
-    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <link type="text/css" rel="stylesheet" href="/style.css">
     <style>
         #username-prompt {
             display: flex;
@@ -68,7 +69,7 @@
 </div>
 
 <script>
-    let socket;
+    const socket = io();
 
     function enterChat() {
         const username = getCookie("username");
@@ -79,11 +80,11 @@
             let welcomeMessage = document.createElement("li");
             welcomeMessage.classList.add("incoming-message");
             welcomeMessage.textContent = `Welcome back, ${username}!`;
-            welcomeMessage.style.opacity = 0;
+            welcomeMessage.style.opacity = '0';
             document.querySelector(".message-list").appendChild(welcomeMessage);
 
             setTimeout(() => {
-                welcomeMessage.style.opacity = 1;
+                welcomeMessage.style.opacity = '1';
                 welcomeMessage.style.transition = "opacity 0.5s ease";
 
                 setTimeout(() => {
@@ -91,7 +92,7 @@
                     chatContainer.style.display = "block";
                     chatContainer.classList.add('slide-up');
 
-                    socket.send(`Welcome, ${username}!`);
+                    //socket.emit(`Welcome, ${username}!`); //testing
                 }, 500);
             }, 100);
         }
@@ -203,93 +204,73 @@
 
 
     function init() {
-        try {
-            socket = new WebSocket("ws://127.0.0.1:8080");
-            socket.onopen = function () {
-                console.log("websocket opened");
+        const socket = io();
 
-            };
-            socket.onclose = function () {
-                console.log("websocket closed");
-            };
-            socket.onmessage = function (event) {
-                const message = event.data;
+        socket.on('message', (message) => {
+            console.log("Received message: " + message);
+            appendMessageToList(message);
+        });
 
+        socket.on('chat history', (history) => {
+            history.forEach((msg) => appendMessageToList(msg));
+            console.log("Chat history loaded");
+        });
 
-                if (message === '/history') {
-                    console.log("History command received");
+        socket.on('clear chat', () => {
+            document.querySelector('.message-list').innerHTML = '';
+            console.log("Chat cleared on client")
+        })
 
-                } else {
+        document.querySelector(".send-button").addEventListener("click", sendMessage);
 
-                    console.log("websocket message: " + message);
-                    let newMessage = document.createElement("li");
-                    newMessage.classList.add("incoming-message");
-                    newMessage.textContent = message;
-                    newMessage.style.opacity = 0;
-                    document.querySelector(".message-list").appendChild(newMessage);
+        socket.emit('history');
 
-
-                    setTimeout(() => {
-                        newMessage.style.opacity = 1;
-                        newMessage.style.transition = "opacity 0.5s ease";
-                    }, 100);
-
-                    let chatContainer = document.querySelector(".chat-window");
-                    chatContainer.scrollTop = chatContainer.scrollHeight;
-                }
-            };
-
-
-            socket.onerror = function (event) {
-                console.log("websocket error: " + event);
-            };
-        } catch (error) {
-            console.log("WebSocket Error: " + error);
-        }
+        let chatContainer = document.querySelector(".chat-window");
+        chatContainer.scrollTop = chatContainer.scrollHeight;
     }
+
+    socket.on('chat history', (history) => {
+       history.forEach((msg) => appendMessageToList(msg));
+       console.log("Chat history loaded");
+    });
 
     function sendMessage() {
-        const message = document.getElementById("message").value;
+        const message = document.getElementById("message").value.trim();
         const username = getCookie("username");
 
-        if (message === '/clear') {
-            document.querySelector('.message-list').innerHTML = '';
-            socket.send(message);
-            document.getElementById("message").value = '';
+        if (message === `/clear`) {
+            socket.emit('clear');
+            console.log("clear command sent")
         } else if (message === '/history') {
-            socket.send(message);
-            document.getElementById("message").value = '';
+            socket.emit('history');
+            console.log("history command sent")
         } else {
             const messageWithUsername = `${username}: ${message}`;
-
-
-            socket.send(messageWithUsername);
-            console.log("Message sent: ", messageWithUsername);
-
-
-            let newMessage = document.createElement("li");
-            newMessage.classList.add("outgoing-message");
-            newMessage.textContent = messageWithUsername;
-            newMessage.style.opacity = 0;
-            document.querySelector(".message-list").appendChild(newMessage);
-
-
-            setTimeout(() => {
-                newMessage.style.opacity = 1;
-                newMessage.style.transition = "opacity 0.5s ease";
-            }, 100);
-
-            document.getElementById("message").value = '';
-
-            let chatContainer = document.querySelector(".chat-window");
-            chatContainer.scrollTop = chatContainer.scrollHeight;
+            socket.emit('message', messageWithUsername);
         }
+
+        document.getElementById('message').value = '';
+
+        let chatContainer = document.querySelector(".chat-window")
+        chatContainer.scrollTop = chatContainer.scrollHeight;
     }
-    init();
+
+    function appendMessageToList(message) {
+        const item = document.createElement('li');
+        item.classList.add("outgoing-message");
+        item.textContent = message;
+        item.style.opacity = '1';
+        console.log("appendMessageToList called");
+        document.querySelector(".message-list").appendChild(item);
+
+        let chatContainer = document.querySelector(".chat-window")
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+    }
 
     document.addEventListener("DOMContentLoaded", function () {
         const usernamePrompt = document.getElementById('username-prompt');
         usernamePrompt.classList.add('visible');
+        init();
     });
 
     document.getElementById("message").addEventListener("keyup", ({key}) => {
@@ -297,6 +278,7 @@
             sendMessage();
         }
     });
+
 </script>
 <img id="fox-icon" src="https://raw.githubusercontent.com/Bzepha/CExchange/refs/heads/webpage/red_fox.png" alt="Fox" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 400px; height: auto; opacity: 0; transition: opacity 1s;">
 </body>
