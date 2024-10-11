@@ -247,7 +247,7 @@
         } else {
             const messageWithUsername = `${username}: ${message}`;
             appendMessageToList(messageWithUsername, "incoming-message")
-            socket.emit('message', messageWithUsername, socket);
+            socket.emit('message', messageWithUsername);
         }
 
         document.getElementById('message').value = '';

@@ -35,8 +35,8 @@ io.on('connection', (socket) => {
     });
 
     // Listen for new messages
-    socket.on('message', (msg, socket) => {
-        socket.broadcast.emit('message', msg)
+    socket.on('message', (msg) => {
+        io.emit('message', msg)
         chatHistory.push(msg);
         console.log('message: ' + msg)
     });
