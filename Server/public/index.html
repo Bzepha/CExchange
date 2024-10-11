@@ -208,11 +208,11 @@
 
         socket.on('message', (message) => {
             console.log("Received message: " + message);
-            appendMessageToList(message);
+            appendMessageToList(message, "outgoing-message");
         });
 
         socket.on('chat history', (history) => {
-            history.forEach((msg) => appendMessageToList(msg));
+            history.forEach((msg) => appendMessageToList(msg, "outgoing-message"));
             console.log("Chat history loaded");
         });
 
@@ -230,7 +230,7 @@
     }
 
     socket.on('chat history', (history) => {
-       history.forEach((msg) => appendMessageToList(msg));
+       history.forEach((msg) => appendMessageToList(msg, "outgoing-message"));
        console.log("Chat history loaded");
     });
 
@@ -246,7 +246,8 @@
             console.log("history command sent")
         } else {
             const messageWithUsername = `${username}: ${message}`;
-            socket.emit('message', messageWithUsername);
+            appendMessageToList(messageWithUsername, "incoming-message")
+            socket.emit('message', messageWithUsername, socket);
         }
 
         document.getElementById('message').value = '';
@@ -255,9 +256,9 @@
         chatContainer.scrollTop = chatContainer.scrollHeight;
     }
 
-    function appendMessageToList(message) {
+    function appendMessageToList(message, type) {
         const item = document.createElement('li');
-        item.classList.add("outgoing-message");
+        item.classList.add(type);
         item.textContent = message;
         item.style.opacity = '1';
         console.log("appendMessageToList called");
