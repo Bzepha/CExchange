@@ -204,14 +204,22 @@
 
 
     function init() {
+        const socket = io();
+
         socket.on('message', (message) => {
             console.log("Received message: " + message);
             appendMessageToList(message);
         });
 
         socket.on('chat history', (history) => {
-            history.forEach((message) => appendMessageToList(message));
+            history.forEach((msg) => appendMessageToList(msg));
+            console.log("Chat history loaded");
         });
+
+        socket.on('clear chat', () => {
+            document.querySelector('.message-list').innerHTML = '';
+            console.log("Chat cleared on client")
+        })
 
         document.querySelector(".send-button").addEventListener("click", sendMessage);
 
@@ -221,16 +229,21 @@
         chatContainer.scrollTop = chatContainer.scrollHeight;
     }
 
+    socket.on('chat history', (history) => {
+       history.forEach((msg) => appendMessageToList(msg));
+       console.log("Chat history loaded");
+    });
+
     function sendMessage() {
-        const message = document.getElementById("message").value;
+        const message = document.getElementById("message").value.trim();
         const username = getCookie("username");
 
         if (message === `/clear`) {
             socket.emit('clear');
-            console.log("clear called")
+            console.log("clear command sent")
         } else if (message === '/history') {
             socket.emit('history');
-            console.log("history called")
+            console.log("history command sent")
         } else {
             const messageWithUsername = `${username}: ${message}`;
             socket.emit('message', messageWithUsername);
@@ -249,13 +262,15 @@
         item.style.opacity = '1';
         console.log("appendMessageToList called");
         document.querySelector(".message-list").appendChild(item);
-    }
 
-    init();
+        let chatContainer = document.querySelector(".chat-window")
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+    }
 
     document.addEventListener("DOMContentLoaded", function () {
         const usernamePrompt = document.getElementById('username-prompt');
         usernamePrompt.classList.add('visible');
+        init();
     });
 
     document.getElementById("message").addEventListener("keyup", ({key}) => {
